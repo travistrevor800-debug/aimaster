@@ -1,44 +1,86 @@
+
 import express from "express";
 import cors from "cors";
-import ModuleLoader from "./core/moduleLoader.js";
+import ModuleLoader from "./moduleLoader.js";
 
 const app = express();
 
-// Allow your frontend's origin once deployed - set FRONTEND_URL in your env vars.
-// Falls back to allowing all origins during local development.
-app.use(cors({ origin: process.env.FRONTEND_URL || "*" }));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*",
+  })
+);
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 4000;
+
 const loader = new ModuleLoader();
 
 async function boot() {
-  await loader.load();
-  await loader.startAll();
-  loader.mountRoutes(app);
+  try {
+    console.log("Starting AI Master backend...");
 
-  // Dashboard nav is built from whatever modules successfully loaded
-  app.get("/api/dashboard/nav", (req, res) => {
-    res.json({ modules: loader.getNavEntries() });
-  });
+    await loader.load();
 
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", modulesLoaded: loader.list().length });
-  });
+    console.log("Modules discovered:", loader.list().map((m) => m.name));
 
-  app.listen(PORT, () => {
-    console.log(`\nAI Master backend running on http://localhost:${PORT}`);
-    console.log(`Modules loaded: ${loader.list().map((m) => m.name).join(", ")}\n`);
-  });
+    await loader.startAll();
+
+    loader.mountRoutes(app);
+
+    app.get("/api/dashboard/nav", (req, res) => {
+      res.json({
+        modules: loader.getNavEntries(),
+      });
+    });
+
+    app.get("/api/health", (req, res) => {
+      res.json({
+        status: "ok",
+        modulesLoaded: loader.list().length,
+        modules: loader.list().map((m) => m.name),
+      });
+    });
+
+    app.get("/", (req, res) => {
+      res.json({
+        name: "AI Master Backend",
+        status: "running",
+        health: "/api/health",
+      });
+    });
+
+    app.listen(PORT, () => {
+      console.log("");
+      console.log("=================================");
+      console.log(" AI Master backend is running");
+      console.log(` http://localhost:${PORT}`);
+      console.log("=================================");
+      console.log("");
+    });
+  } catch (error) {
+    console.error("");
+    console.error("=================================");
+    console.error(" FATAL BOOT ERROR");
+    console.error("=================================");
+    console.error(error);
+    console.error("");
+
+    process.exit(1);
+  }
 }
 
 process.on("SIGINT", async () => {
   console.log("\nShutting down...");
-  await loader.stopAll();
+
+  try {
+    await loader.stopAll();
+  } catch (error) {
+    console.error("Shutdown error:", error);
+  }
+
   process.exit(0);
 });
 
-boot().catch((err) => {
-  console.error("Fatal error during boot:", err);
-  process.exit(1);
-});
+boot();
