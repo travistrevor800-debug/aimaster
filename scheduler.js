@@ -1,7 +1,7 @@
-import * as youtube from "./connectors/youtube.js";
-import * as x from "./connectors/x.js";
-import * as instagram from "./connectors/instagram.js";
-import * as tiktok from "./connectors/tiktok.js";
+import * as youtube from "./youtube.js";
+import * as x from "./x.js";
+import * as instagram from "./instagram.js";
+import * as tiktok from "./tiktok.js";
 
 const connectors = { youtube, x, instagram, tiktok };
 
