@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+  />
+  <meta name="theme-color" content="#08080d" />
+  <meta
+    name="description"
+    content="AI Master — your intelligent command center"
+  />
+  <title>AI Master</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --bg: #08080d;
+      --panel: #101016;
+      --panel-2: #15151d;
+      --border: #292532;
+      --text: #f4f1fa;
+      --muted: #8f8a9d;
+      --accent: #a66cff;
+      --accent-soft: rgba(166, 108, 255, 0.12);
+      --success: #57e0ad;
+    }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+      overflow-x: hidden;
+    }
+    button,
+    input {
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Top bar */
+    .topbar {
+      height: 64px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 8, 13, 0.96);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(14px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: var(--accent-soft);
+      border: 1px solid rgba(166, 108, 255, 0.35);
+      font-size: 18px;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(87, 224, 173, 0.7);
+    }
+    /* Main */
+    .main {
+      flex: 1;
+      width: 100%;
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 28px 18px 110px;
+    }
+    .search {
+      width: 100%;
+      height: 48px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 0 16px;
+      outline: none;
+      margin-bottom: 30px;
+    }
+    .search::placeholder {
+      color: #5f5a6b;
+    }
+    .search:focus {
+      border-color: rgba(166, 108, 255, 0.65);
+    }
+    .hero {
+      text-align: center;
+      padding: 36px 10px 28px;
+    }
+    .avatar {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 18px;
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(
+        145deg,
+        #1d1828,
+        #100e16
+      );
+      border: 1px solid rgba(166, 108, 255, 0.4);
+      box-shadow:
+        0 0 35px rgba(166, 108, 255, 0.12),
+        inset 0 0 25px rgba(166, 108, 255, 0.05);
+      font-size: 42px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 7vw, 42px);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+    /* Quick actions */
+    .actions {
+      display: grid;
+      gap: 10px;
+      max-width: 650px;
+      margin: 10px auto 34px;
+    }
+    .action {
+      min-height: 58px;
+      padding: 0 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(166, 108, 255, 0.25);
+      background: #111019;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      transition: 0.2s ease;
+    }
+    .action:hover,
+    .action:active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+    .action-icon {
+      font-size: 20px;
+      width: 30px;
+      text-align: center;
+    }
+    .action-text strong {
+      display: block;
+      font-size: 14px;
+    }
+    .action-text span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    /* Dashboard */
+    .section-title {
+      margin: 0 auto 12px;
+      max-width: 650px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+    }
+    .stats {
+      max-width: 650px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 16px;
+    }
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 23px;
+      font-weight: 700;
+    }
+    /* Composer */
+    .composer-wrap {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 14px 12px;
+      background: linear-gradient(
+        transparent,
+        rgba(8, 8, 13, 0.98) 28%
+      );
+      z-index: 30;
+    }
+    .composer {
+      max-width: 850px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .attach,
+    .send {
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+    }
+    .attach {
+      border-color: rgba(166, 108, 255, 0.4);
+      font-size: 20px;
+    }
+    .send {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      font-size: 20px;
+    }
+    .message-input {
+      height: 48px;
+      min-width: 0;
+      flex: 1;
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 0 15px;
+      outline: none;
+    }
+    .message-input::placeholder {
+      color: #656071;
+    }
+    .message-input:focus {
+      border-color: rgba(166, 108, 255, 0.65);
+    }
+    /* Bottom navigation */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 76px;
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      z-index: 25;
+      pointer-events: none;
+    }
+    .nav-inner {
+      pointer-events: auto;
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(16, 16, 22, 0.94);
+      backdrop-filter: blur(12px);
+    }
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 11px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    .nav-btn.active {
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 145px;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      pointer-events: none;
+      background: #18151f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 15px;
+      color: var(--text);
+      font-size: 13px;
+      transition: 0.25s ease;
+      z-index: 50;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+    @media (min-width: 700px) {
+      .main {
+        padding-top: 45px;
+      }
+      .stats {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .bottom-nav {
+        bottom: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">✦</div>
+    <span>AI MASTER</span>
+  </div>
+  <div class="status">
+    <span class="status-dot"></span>
+    <span id="statusText">ONLINE</span>
+  </div>
+</header>
+<main class="main">
+  <input
+    class="search"
+    id="searchInput"
+    type="search"
+    placeholder="Search messages..."
+    autocomplete="off"
+  />
+  <section class="hero">
+    <div class="avatar">🤖</div>
+    <h1>AI Master</h1>
+    <p>Your intelligent command center</p>
+  </section>
+  <section class="actions">
+    <button class="action" onclick="showMessage('Content Creator')">
+      <span class="action-icon">✨</span>
+      <span class="action-text">
+        <strong>Create Content</strong>
+        <span>Generate ideas, captions and posts</span>
+      </span>
+    </button>
+    <button class="action" onclick="loadTrends()">
+      <span class="action-icon">📈</span>
+      <span class="action-text">
+        <strong>View Trends</strong>
+        <span>Check social media trends</span>
+      </span>
+    </button>
+    <button class="action" onclick="loadQueue()">
+      <span class="action-icon">📅</span>
+      <span class="action-text">
+        <strong>Post Scheduler</strong>
+        <span>Manage your scheduled content</span>
+      </span>
+    </button>
+    <button class="action" onclick="showMessage('AI Assistant')">
+      <span class="action-icon">🧠</span>
+      <span class="action-text">
+        <strong>AI Assistant</strong>
+        <span>Talk with your AI Master</span>
+      </span>
+    </button>
+  </section>
+  <div class="section-title">System Overview</div>
+  <section class="stats">
+    <div class="stat">
+      <div class="stat-label">Backend</div>
+      <div class="stat-value" id="backendStatus">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Modules</div>
+      <div class="stat-value" id="moduleCount">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Queue</div>
+      <div class="stat-value" id="queueCount">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Social</div>
+      <div class="stat-value">4</div>
+    </div>
+  </section>
+</main>
+<nav class="bottom-nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showMessage('Dashboard')">
+      🏠 Dashboard
+    </button>
+    <button class="nav-btn" onclick="showMessage('AI Assistant')">
+      🤖 AI
+    </button>
+    <button class="nav-btn" onclick="loadTrends()">
+      📊 Trends
+    </button>
+    <button class="nav-btn" onclick="showMessage('Settings')">
+      ⚙️ Settings
+    </button>
+  </div>
+</nav>
+<div class="composer-wrap">
+  <div class="composer">
+    <button class="attach" onclick="showMessage('Attachments')">
+      📎
+    </button>
+    <input
+      class="message-input"
+      id="messageInput"
+      type="text"
+      placeholder="Type your message..."
+      autocomplete="off"
+    />
+    <button class="send" onclick="sendMessage()">➜</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+  </div>
+  <script>
+    const API = "/api";
+    function showMessage(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1800);
+    }
+    async function loadHealth() {
+      try {
+        const response = await fetch(`${API}/health`);
+        if (!response.ok) {
+          throw new Error("Backend unavailable");
+        }
+        const data = await response.json();
+        document.getElementById("backendStatus").textContent =
+          data.status === "ok" ? "OK" : "ERROR";
+        document.getElementById("moduleCount").textContent =
+          data.modulesLoaded ?? 0;
+        document.getElementById("statusText").textContent = "ONLINE";
+      } catch (error) {
+        document.getElementById("backendStatus").textContent = "OFF";
+        document.getElementById("statusText").textContent = "OFFLINE";
+      }
+    }
+    async function loadQueue() {
+      try {
+        const response = await fetch(
+          `${API}/social-sync/queue`
+        );
+        if (!response.ok) {
+          throw new Error("Queue unavailable");
+        }
+        const data = await response.json();
+        const queue = Array.isArray(data.queue)
+          ? data.queue
+          : [];
+        document.getElementById("queueCount").textContent =
+          queue.length;
+        showMessage(`Queue: ${queue.length} item(s)`);
+      } catch (error) {
+        showMessage("Unable to load queue");
+      }
+    }
+    async function loadTrends() {
+      try {
+        const response = await fetch(
+          `${API}/social-sync/trends/youtube`
+        );
+        if (!response.ok) {
+          throw new Error("Trends unavailable");
+        }
+        const data = await response.json();
+        showMessage(
+          `YouTube trends: ${(data.trends || []).length}`
+        );
+      } catch (error) {
+        showMessage("Unable to load trends");
+      }
+    }
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const message = input.value.trim();
+      if (!message) {
+        showMessage("Type a message first");
+        return;
+      }
+      showMessage("AI Assistant is ready — chat engine coming next");
+      input.value = "";
+    }
+    document
+      .getElementById("messageInput")
+      .addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      });
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", () => {
+        // Search functionality will be connected to conversation
+        // history when the AI memory/chat system is added.
+      });
+    loadHealth();
+    loadQueue();
+  </script>
+</body>
+</html>
