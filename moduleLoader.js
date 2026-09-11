@@ -1,67 +1,35 @@
-import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-/**
- * ModuleLoader
- *
- * Loads feature modules from the repository root.
- *
- * Supported module files:
- * - youtube.js
- * - instagram.js
- * - tiktok.js
- * - x.js
- *
- * A broken module will be skipped instead of crashing
- * the entire application.
- */
 export default class ModuleLoader {
-  constructor(folder = __dirname) {
-    this.folder = folder;
+  constructor(moduleFile = path.join(__dirname, "index.js")) {
+    this.moduleFile = moduleFile;
     this.modules = [];
   }
   async load() {
-    if (!fs.existsSync(this.folder)) {
-      console.warn(`[ModuleLoader] Folder not found: ${this.folder}`);
-      return;
-    }
-    const moduleFiles = [
-      "youtube.js",
-      "instagram.js",
-      "tiktok.js",
-      "x.js",
-    ];
-    for (const fileName of moduleFiles) {
-      const modulePath = path.join(this.folder, fileName);
-      if (!fs.existsSync(modulePath)) {
-        console.warn(
-          `[ModuleLoader] Skipping "${fileName}" - file not found`
-        );
-        continue;
-      }
-      try {
-        const imported = await import(pathToFileURL(modulePath).href);
-        const mod = imported.default;
-        if (!mod || !mod.name) {
-          console.warn(
-            `[ModuleLoader] Skipping "${fileName}" - invalid module export`
-          );
-          continue;
-        }
-        this.modules.push(mod);
-        console.log(
-          `[ModuleLoader] Loaded module: ${mod.name} (v${
-            mod.version || "0.0.0"
-          })`
-        );
-      } catch (err) {
-        console.error(
-          `[ModuleLoader] Failed to load "${fileName}":`,
-          err.message
+    try {
+      const imported = await import(
+        pathToFileURL(this.moduleFile).href
+      );
+      const mod = imported.default;
+      if (!mod || !mod.name) {
+        throw new Error(
+          "Invalid module export: expected a default export with a name"
         );
       }
+      this.modules = [mod];
+      console.log(
+        `[ModuleLoader] Loaded module: ${mod.name} (v${
+          mod.version || "0.0.0"
+        })`
+      );
+    } catch (error) {
+      console.error(
+        "[ModuleLoader] Failed to load module:",
+        error.message
+      );
+      throw error;
     }
   }
   async startAll() {
@@ -70,11 +38,12 @@ export default class ModuleLoader {
         if (typeof mod.start === "function") {
           await mod.start();
         }
-      } catch (err) {
+      } catch (error) {
         console.error(
           `[ModuleLoader] Error starting "${mod.name}":`,
-          err.message
+          error.message
         );
+        throw error;
       }
     }
   }
@@ -84,42 +53,44 @@ export default class ModuleLoader {
         if (typeof mod.stop === "function") {
           await mod.stop();
         }
-      } catch (err) {
+      } catch (error) {
         console.error(
           `[ModuleLoader] Error stopping "${mod.name}":`,
-          err.message
+          error.message
         );
       }
     }
   }
   mountRoutes(app) {
     for (const mod of this.modules) {
-      if (typeof mod.routes === "function") {
-        try {
-          const router = mod.routes();
-          const slug =
-            mod.slug ||
-            mod.name
-              .toLowerCase()
-              .replace(/\s+/g, "-");
-          const base = `/api/${slug}`;
-          app.use(base, router);
-          console.log(
-            `[ModuleLoader] Mounted routes for "${mod.name}" at ${base}`
-          );
-        } catch (err) {
-          console.error(
-            `[ModuleLoader] Failed to mount routes for "${mod.name}":`,
-            err.message
-          );
-        }
+      if (typeof mod.routes !== "function") {
+        continue;
+      }
+      try {
+        const router = mod.routes();
+        const slug =
+          mod.slug ||
+          mod.name
+            .toLowerCase()
+            .replace(/\s+/g, "-");
+        const base = `/api/${slug}`;
+        app.use(base, router);
+        console.log(
+          `[ModuleLoader] Mounted routes for "${mod.name}" at ${base}`
+        );
+      } catch (error) {
+        console.error(
+          `[ModuleLoader] Failed to mount routes for "${mod.name}":`,
+          error.message
+        );
+        throw error;
       }
     }
   }
   getNavEntries() {
     return this.modules
-      .filter((m) => m.navEntry)
-      .map((m) => m.navEntry);
+      .filter((mod) => mod.navEntry)
+      .map((mod) => mod.navEntry);
   }
   list() {
     return this.modules;
