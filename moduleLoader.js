@@ -19,28 +19,24 @@ export default class ModuleLoader {
       const rootModule = imported.default;
 
       if (!rootModule) {
-        throw new Error("No default module export found");
+        throw new Error(
+          "Module registry does not export a default module"
+        );
       }
 
-      /*
-       * The root module can now contain:
-       *
-       * modules: [module1, module2, module3]
-       *
-       * This lets AI Master grow into multiple modules.
-       */
-
+      // New architecture:
+      // index.js contains an array of modules.
       if (Array.isArray(rootModule.modules)) {
         this.modules = rootModule.modules;
       } else {
-        // Backward compatibility with the existing Social Sync module
+        // Backward compatibility with the old architecture.
         this.modules = [rootModule];
       }
 
       for (const mod of this.modules) {
         if (!mod || !mod.name) {
           throw new Error(
-            "Invalid module: every module needs a name"
+            "Invalid module: every module must have a name"
           );
         }
 
@@ -50,9 +46,7 @@ export default class ModuleLoader {
           })`
         );
       }
-
     } catch (error) {
-
       console.error(
         "[ModuleLoader] Failed to load modules:",
         error.message
@@ -63,17 +57,12 @@ export default class ModuleLoader {
   }
 
   async startAll() {
-
     for (const mod of this.modules) {
-
       try {
-
         if (typeof mod.start === "function") {
           await mod.start();
         }
-
       } catch (error) {
-
         console.error(
           `[ModuleLoader] Error starting "${mod.name}":`,
           error.message
@@ -85,17 +74,12 @@ export default class ModuleLoader {
   }
 
   async stopAll() {
-
     for (const mod of this.modules) {
-
       try {
-
         if (typeof mod.stop === "function") {
           await mod.stop();
         }
-
       } catch (error) {
-
         console.error(
           `[ModuleLoader] Error stopping "${mod.name}":`,
           error.message
@@ -105,15 +89,12 @@ export default class ModuleLoader {
   }
 
   mountRoutes(app) {
-
     for (const mod of this.modules) {
-
       if (typeof mod.routes !== "function") {
         continue;
       }
 
       try {
-
         const router = mod.routes();
 
         const slug =
@@ -129,9 +110,7 @@ export default class ModuleLoader {
         console.log(
           `[ModuleLoader] Mounted routes for "${mod.name}" at ${base}`
         );
-
       } catch (error) {
-
         console.error(
           `[ModuleLoader] Failed to mount routes for "${mod.name}":`,
           error.message
@@ -143,7 +122,6 @@ export default class ModuleLoader {
   }
 
   getNavEntries() {
-
     return this.modules
       .filter((mod) => mod.navEntry)
       .map((mod) => mod.navEntry);
