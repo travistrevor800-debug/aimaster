@@ -1,1 +1,200 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>AI Master</title>
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="brand">
+        <div class="brand-icon">AI</div>
+        <span>AI Master</span>
+      </div>
+
+      <nav>
+
+        <button class="nav-item active" data-page="dashboard">
+          <span>🏠</span>
+          Dashboard
+        </button>
+
+        <button class="nav-item" data-page="chat">
+          <span>🤖</span>
+          AI Chat
+        </button>
+
+        <button class="nav-item" data-page="audio">
+          <span>🔊</span>
+          Audio
+        </button>
+
+        <button class="nav-item" data-page="video">
+          <span>🎬</span>
+          Video
+        </button>
+
+        <button class="nav-item" data-page="images">
+          <span>🖼️</span>
+          Images
+        </button>
+
+        <button class="nav-item" data-page="social">
+          <span>📱</span>
+          Social Media
+        </button>
+
+        <button class="nav-item" data-page="memory">
+          <span>🧠</span>
+          Memory
+        </button>
+
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <button class="nav-item">
+          <span>⚙️</span>
+          Settings
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <header class="topbar">
+
+        <div>
+          <h1>AI Workspace</h1>
+          <p>Create with AI</p>
+        </div>
+
+        <div class="status">
+          <span class="status-dot"></span>
+          AI Master Online
+        </div>
+
+      </header>
+
+
+      <!-- AI INPUT -->
+      <section class="hero">
+
+        <h2>What do you want to create?</h2>
+
+        <p>
+          Ask AI Master to create text, audio, images or video.
+        </p>
+
+        <textarea
+          id="prompt"
+          placeholder="Example: Create a motivational video about discipline..."
+        ></textarea>
+
+        <div class="controls">
+
+          <select id="outputType">
+            <option value="text">Text</option>
+            <option value="audio">Audio</option>
+            <option value="video">Video</option>
+            <option value="image">Image</option>
+          </select>
+
+          <button id="generateBtn">
+            ✨ Generate
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- OUTPUT -->
+      <section class="output-section">
+
+        <div class="section-title">
+          <h2>Output</h2>
+        </div>
+
+        <div id="outputArea">
+
+          <div class="empty-output">
+
+            <div class="empty-icon">
+              ✨
+            </div>
+
+            <h3>Your generated content will appear here</h3>
+
+            <p>
+              Choose an output type and send your request.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- QUICK ACTIONS -->
+      <section class="quick-actions">
+
+        <h2>Quick Actions</h2>
+
+        <div class="cards">
+
+          <button class="action-card" data-type="text">
+            <span>🤖</span>
+            <strong>Ask AI</strong>
+            <small>Chat with AI Master</small>
+          </button>
+
+          <button class="action-card" data-type="audio">
+            <span>🔊</span>
+            <strong>Create Audio</strong>
+            <small>Generate voice output</small>
+          </button>
+
+          <button class="action-card" data-type="video">
+            <span>🎬</span>
+            <strong>Create Video</strong>
+            <small>Generate video content</small>
+          </button>
+
+          <button class="action-card" data-type="image">
+            <span>🖼️</span>
+            <strong>Create Image</strong>
+            <small>Generate visual content</small>
+          </button>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="/app.js"></script>
+
+</body>
+</html>
