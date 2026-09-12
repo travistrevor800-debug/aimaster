@@ -1,10 +1,15 @@
 import { Router } from "express";
+import OpenAI from "openai";
 import eventBus from "./eventBus.js";
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export default {
   name: "AI Workspace",
 
-  version: "0.1.0",
+  version: "0.2.0",
 
   slug: "ai",
 
@@ -15,33 +20,17 @@ export default {
   },
 
   routes() {
-
     const router = Router();
 
-    /*
-     * Main AI generation endpoint
-     *
-     * POST /api/ai/generate
-     *
-     * Body:
-     * {
-     *   "prompt": "Create a motivational message",
-     *   "type": "text"
-     * }
-     */
-
     router.post("/generate", async (req, res) => {
-
       try {
-
         const { prompt, type = "text" } = req.body;
 
         if (!prompt || typeof prompt !== "string") {
-
           return res.status(400).json({
+            success: false,
             error: "prompt is required",
           });
-
         }
 
         const supportedTypes = [
@@ -52,69 +41,66 @@ export default {
         ];
 
         if (!supportedTypes.includes(type)) {
-
           return res.status(400).json({
+            success: false,
             error: "Unsupported output type",
             supportedTypes,
           });
-
         }
 
-        /*
-         * Temporary AI engine.
-         *
-         * We will connect the real AI provider here next.
-         */
-
+        // TEXT GENERATION
         if (type === "text") {
+          if (!process.env.OPENAI_API_KEY) {
+            return res.status(503).json({
+              success: false,
+              error: "OPENAI_API_KEY is not configured.",
+            });
+          }
+
+          const response = await client.responses.create({
+            model: "gpt-5.6-luna",
+            input: prompt,
+          });
 
           return res.json({
             success: true,
             type: "text",
-            content:
-              `AI Master received your request: ${prompt}`,
+            content: response.output_text,
           });
-
         }
 
+        // These engines will be connected separately.
         if (type === "audio") {
-
           return res.status(501).json({
             success: false,
             type: "audio",
-            error: "Audio engine is not connected yet.",
+            error: "Audio engine is the next integration.",
           });
-
-        }
-
-        if (type === "video") {
-
-          return res.status(501).json({
-            success: false,
-            type: "video",
-            error: "Video engine is not connected yet.",
-          });
-
         }
 
         if (type === "image") {
-
           return res.status(501).json({
             success: false,
             type: "image",
-            error: "Image engine is not connected yet.",
+            error: "Image engine is the next integration.",
           });
+        }
 
+        if (type === "video") {
+          return res.status(501).json({
+            success: false,
+            type: "video",
+            error: "Video engine is the next integration.",
+          });
         }
 
       } catch (error) {
-
         console.error(
           "[AI Workspace] Generation error:",
           error
         );
 
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           error: "AI generation failed",
           message: error.message,
@@ -126,14 +112,11 @@ export default {
   },
 
   async start() {
-
-    console.log(
-      "AI Workspace module ready."
-    );
+    console.log("AI Workspace module ready.");
 
     eventBus.emit("module:ready", {
       module: "ai",
-      version: "0.1.0",
+      version: "0.2.0",
     });
   },
 };
