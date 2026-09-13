@@ -1,12 +1,20 @@
-const promptInput = document.getElementById("prompt");
-const generateBtn = document.getElementById("generateBtn");
-const chatMessages = document.getElementById("chatMessages");
-const typingIndicator = document.getElementById("typingIndicator");
+const promptInput =
+  document.getElementById("prompt");
 
-const newChatBtn = document.getElementById("newChatBtn");
-const topNewChatBtn = document.getElementById("topNewChatBtn");
+const generateBtn =
+  document.getElementById("generateBtn");
 
-const suggestions = document.querySelectorAll(".suggestion");
+const chatMessages =
+  document.getElementById("chatMessages");
+
+const typingIndicator =
+  document.getElementById("typingIndicator");
+
+const newChatBtn =
+  document.getElementById("newChatBtn");
+
+const topNewChatBtn =
+  document.getElementById("topNewChatBtn");
 
 let conversation = [];
 
@@ -16,7 +24,9 @@ let conversation = [];
 ========================= */
 
 async function sendMessage() {
-  const prompt = promptInput.value.trim();
+
+  const prompt =
+    promptInput.value.trim();
 
   if (!prompt) {
     return;
@@ -30,6 +40,7 @@ async function sendMessage() {
   });
 
   promptInput.value = "";
+
   autoResize();
 
   generateBtn.disabled = true;
@@ -37,27 +48,34 @@ async function sendMessage() {
   showTyping();
 
   try {
-    const response = await fetch("/api/ai/generate", {
-      method: "POST",
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+    const response = await fetch(
+      "/api/ai/generate",
+      {
+        method: "POST",
 
-      body: JSON.stringify({
-        prompt: buildConversationPrompt(),
-        type: "text"
-      })
-    });
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-    const data = await response.json();
+        body: JSON.stringify({
+          prompt: buildConversationPrompt(),
+          type: "text"
+        })
+      }
+    );
+
+    const data =
+      await response.json();
 
     if (!response.ok) {
+
       throw new Error(
         data.message ||
         data.error ||
         "AI generation failed"
       );
+
     }
 
     hideTyping();
@@ -85,6 +103,7 @@ async function sendMessage() {
   } finally {
 
     generateBtn.disabled = false;
+
     promptInput.focus();
 
   }
@@ -92,13 +111,15 @@ async function sendMessage() {
 
 
 /* =========================
-   BUILD CONVERSATION
+   CONVERSATION
 ========================= */
 
 function buildConversationPrompt() {
 
   if (conversation.length <= 1) {
+
     return conversation[0]?.content || "";
+
   }
 
   return `
@@ -110,17 +131,20 @@ Conversation:
 
 ${conversation
   .map(message => {
+
     const speaker =
       message.role === "user"
         ? "User"
         : "AI Master";
 
     return `${speaker}: ${message.content}`;
+
   })
   .join("\n\n")}
 
 AI Master:
 `;
+
 }
 
 
@@ -128,18 +152,26 @@ AI Master:
    ADD MESSAGE
 ========================= */
 
-function addMessage(type, text) {
+function addMessage(
+  type,
+  text
+) {
 
-  const welcome = document.getElementById("welcomeScreen");
+  const welcome =
+    document.getElementById(
+      "welcomeScreen"
+    );
 
   if (welcome) {
     welcome.remove();
   }
 
-  const message = document.createElement("div");
+  const message =
+    document.createElement("div");
 
   message.className =
     `chat-message ${type}-message`;
+
 
   if (type === "user") {
 
@@ -153,7 +185,10 @@ function addMessage(type, text) {
       </div>
     `;
 
-  } else if (type === "ai") {
+  }
+
+
+  else if (type === "ai") {
 
     message.innerHTML = `
       <div class="message-avatar ai-message-avatar">
@@ -165,7 +200,10 @@ function addMessage(type, text) {
       </div>
     `;
 
-  } else {
+  }
+
+
+  else {
 
     message.innerHTML = `
       <div class="message-avatar error-message-avatar">
@@ -176,52 +214,64 @@ function addMessage(type, text) {
         ${escapeHtml(text)}
       </div>
     `;
+
   }
+
 
   chatMessages.appendChild(message);
 
   scrollToBottom();
+
 }
 
 
 /* =========================
-   FORMAT AI RESPONSE
+   FORMAT RESPONSE
 ========================= */
 
 function formatAIResponse(text) {
 
-  let safe = escapeHtml(text);
+  let safe =
+    escapeHtml(text);
 
-  // Convert basic markdown-style formatting
-  safe = safe.replace(
-    /\*\*(.*?)\*\*/g,
-    "<strong>$1</strong>"
-  );
+  safe =
+    safe.replace(
+      /\*\*(.*?)\*\*/g,
+      "<strong>$1</strong>"
+    );
 
-  safe = safe.replace(
-    /\n/g,
-    "<br>"
-  );
+  safe =
+    safe.replace(
+      /\n/g,
+      "<br>"
+    );
 
   return safe;
+
 }
 
 
 /* =========================
-   TYPING INDICATOR
+   TYPING
 ========================= */
 
 function showTyping() {
 
-  typingIndicator.classList.remove("hidden");
+  typingIndicator.classList.remove(
+    "hidden"
+  );
 
   scrollToBottom();
+
 }
 
 
 function hideTyping() {
 
-  typingIndicator.classList.add("hidden");
+  typingIndicator.classList.add(
+    "hidden"
+  );
+
 }
 
 
@@ -234,44 +284,60 @@ function newChat() {
   conversation = [];
 
   chatMessages.innerHTML = `
-    <div id="welcomeScreen" class="welcome-screen">
+
+    <div
+      id="welcomeScreen"
+      class="welcome-screen"
+    >
 
       <div class="welcome-avatar">
         🤖
       </div>
 
-      <h2>How can I help you today?</h2>
+      <h2>
+        How can I help you today?
+      </h2>
 
       <p>
-        I'm AI Master. Ask me anything, create content,
-        brainstorm ideas, write code, or solve a problem.
+        I'm AI Master. Ask me anything,
+        create content, brainstorm ideas,
+        write code, or solve a problem.
       </p>
 
       <div class="suggestions">
 
-        <button class="suggestion"
-          data-prompt="Explain artificial intelligence in simple terms.">
+        <button
+          class="suggestion"
+          data-prompt="Explain artificial intelligence in simple terms."
+        >
           💡 Explain something
         </button>
 
-        <button class="suggestion"
-          data-prompt="Give me 5 creative business ideas I can start.">
+        <button
+          class="suggestion"
+          data-prompt="Give me 5 creative business ideas I can start."
+        >
           💼 Business ideas
         </button>
 
-        <button class="suggestion"
-          data-prompt="Help me write a professional message.">
+        <button
+          class="suggestion"
+          data-prompt="Help me write a professional message."
+        >
           ✍️ Help me write
         </button>
 
-        <button class="suggestion"
-          data-prompt="Teach me something interesting today.">
+        <button
+          class="suggestion"
+          data-prompt="Teach me something interesting today."
+        >
           🧠 Teach me
         </button>
 
       </div>
 
     </div>
+
   `;
 
   attachSuggestionEvents();
@@ -281,6 +347,7 @@ function newChat() {
   autoResize();
 
   promptInput.focus();
+
 }
 
 
@@ -294,18 +361,22 @@ function attachSuggestionEvents() {
     .querySelectorAll(".suggestion")
     .forEach(button => {
 
-      button.addEventListener("click", () => {
+      button.addEventListener(
+        "click",
+        () => {
 
-        promptInput.value =
-          button.dataset.prompt;
+          promptInput.value =
+            button.dataset.prompt;
 
-        autoResize();
+          autoResize();
 
-        promptInput.focus();
+          promptInput.focus();
 
-      });
+        }
+      );
 
     });
+
 }
 
 
@@ -315,11 +386,15 @@ function attachSuggestionEvents() {
 
 function autoResize() {
 
-  promptInput.style.height = "auto";
+  promptInput.style.height =
+    "auto";
 
   promptInput.style.height =
-    Math.min(promptInput.scrollHeight, 180) +
-    "px";
+    Math.min(
+      promptInput.scrollHeight,
+      180
+    ) + "px";
+
 }
 
 
@@ -353,7 +428,7 @@ promptInput.addEventListener(
 
 
 /* =========================
-   BUTTON EVENTS
+   BUTTONS
 ========================= */
 
 generateBtn.addEventListener(
@@ -382,17 +457,24 @@ document
   .querySelectorAll(".nav-item")
   .forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-      document
-        .querySelectorAll(".nav-item")
-        .forEach(item =>
-          item.classList.remove("active")
+        document
+          .querySelectorAll(".nav-item")
+          .forEach(item =>
+            item.classList.remove(
+              "active"
+            )
+          );
+
+        button.classList.add(
+          "active"
         );
 
-      button.classList.add("active");
-
-    });
+      }
+    );
 
   });
 
@@ -404,11 +486,26 @@ document
 function escapeHtml(value) {
 
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
@@ -419,17 +516,21 @@ function escapeHtml(value) {
 
 function scrollToBottom() {
 
-  setTimeout(() => {
+  setTimeout(
+    () => {
 
-    chatMessages.scrollTop =
-      chatMessages.scrollHeight;
+      chatMessages.scrollTop =
+        chatMessages.scrollHeight;
 
-  }, 50);
+    },
+    50
+  );
+
 }
 
 
 /* =========================
-   STARTUP
+   START
 ========================= */
 
 attachSuggestionEvents();
