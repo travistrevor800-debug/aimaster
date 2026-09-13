@@ -2,10 +2,6 @@ import { Router } from "express";
 import OpenAI from "openai";
 import eventBus from "./eventBus.js";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export default {
   name: "AI Workspace",
 
@@ -26,6 +22,7 @@ export default {
       try {
         const { prompt, type = "text" } = req.body;
 
+        // Validate prompt
         if (!prompt || typeof prompt !== "string") {
           return res.status(400).json({
             success: false,
@@ -33,6 +30,7 @@ export default {
           });
         }
 
+        // Validate output type
         const supportedTypes = [
           "text",
           "audio",
@@ -48,14 +46,23 @@ export default {
           });
         }
 
+        // =========================
         // TEXT GENERATION
+        // =========================
         if (type === "text") {
-          if (!process.env.OPENAI_API_KEY) {
+          const apiKey = process.env.OPENAI_API_KEY;
+
+          if (!apiKey) {
             return res.status(503).json({
               success: false,
-              error: "OPENAI_API_KEY is not configured.",
+              error: "OPENAI_API_KEY is not configured on Vercel.",
             });
           }
+
+          // Create OpenAI client only when needed
+          const client = new OpenAI({
+            apiKey,
+          });
 
           const response = await client.responses.create({
             model: "gpt-5.6-luna",
@@ -65,32 +72,40 @@ export default {
           return res.json({
             success: true,
             type: "text",
-            content: response.output_text,
+            content: response.output_text || "",
           });
         }
 
-        // These engines will be connected separately.
+        // =========================
+        // AUDIO
+        // =========================
         if (type === "audio") {
           return res.status(501).json({
             success: false,
             type: "audio",
-            error: "Audio engine is the next integration.",
+            error: "Audio engine is not connected yet.",
           });
         }
 
+        // =========================
+        // IMAGE
+        // =========================
         if (type === "image") {
           return res.status(501).json({
             success: false,
             type: "image",
-            error: "Image engine is the next integration.",
+            error: "Image engine is not connected yet.",
           });
         }
 
+        // =========================
+        // VIDEO
+        // =========================
         if (type === "video") {
           return res.status(501).json({
             success: false,
             type: "video",
-            error: "Video engine is the next integration.",
+            error: "Video engine is not connected yet.",
           });
         }
 
@@ -103,7 +118,7 @@ export default {
         return res.status(500).json({
           success: false,
           error: "AI generation failed",
-          message: error.message,
+          message: error?.message || "Unknown error",
         });
       }
     });
