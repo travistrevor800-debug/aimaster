@@ -75,6 +75,12 @@
         Settings
       </button>
 
+      <!-- CREATOR -->
+      <div class="creator-credit">
+        <small>Created by</small>
+        <strong>Trevor Githinji</strong>
+      </div>
+
     </div>
 
   </aside>
@@ -94,6 +100,7 @@
 
         <div>
           <h1>AI Master</h1>
+
           <p>
             <span class="status-dot"></span>
             Online
@@ -102,7 +109,10 @@
 
       </div>
 
-      <button id="topNewChatBtn" class="top-new-chat">
+      <button
+        id="topNewChatBtn"
+        class="top-new-chat"
+      >
         ＋ New Chat
       </button>
 
@@ -110,41 +120,58 @@
 
 
     <!-- CHAT AREA -->
-    <section id="chatMessages" class="chat-messages">
+    <section
+      id="chatMessages"
+      class="chat-messages"
+    >
 
       <!-- WELCOME -->
-      <div id="welcomeScreen" class="welcome-screen">
+      <div
+        id="welcomeScreen"
+        class="welcome-screen"
+      >
 
         <div class="welcome-avatar">
           🤖
         </div>
 
-        <h2>How can I help you today?</h2>
+        <h2>
+          How can I help you today?
+        </h2>
 
         <p>
-          I'm AI Master. Ask me anything, create content,
-          brainstorm ideas, write code, or solve a problem.
+          I'm AI Master. Ask me anything,
+          create content, brainstorm ideas,
+          write code, or solve a problem.
         </p>
 
         <div class="suggestions">
 
-          <button class="suggestion"
-            data-prompt="Explain artificial intelligence in simple terms.">
+          <button
+            class="suggestion"
+            data-prompt="Explain artificial intelligence in simple terms."
+          >
             💡 Explain something
           </button>
 
-          <button class="suggestion"
-            data-prompt="Give me 5 creative business ideas I can start.">
+          <button
+            class="suggestion"
+            data-prompt="Give me 5 creative business ideas I can start."
+          >
             💼 Business ideas
           </button>
 
-          <button class="suggestion"
-            data-prompt="Help me write a professional message.">
+          <button
+            class="suggestion"
+            data-prompt="Help me write a professional message."
+          >
             ✍️ Help me write
           </button>
 
-          <button class="suggestion"
-            data-prompt="Teach me something interesting today.">
+          <button
+            class="suggestion"
+            data-prompt="Teach me something interesting today."
+          >
             🧠 Teach me
           </button>
 
@@ -156,22 +183,27 @@
 
 
     <!-- THINKING INDICATOR -->
-    <div id="typingIndicator" class="typing-indicator hidden">
+    <div
+      id="typingIndicator"
+      class="typing-indicator hidden"
+    >
 
       <div class="message-avatar ai-message-avatar">
         AI
       </div>
 
       <div class="typing-content">
+
         <span></span>
         <span></span>
         <span></span>
+
       </div>
 
     </div>
 
 
-    <!-- INPUT AREA -->
+    <!-- INPUT -->
     <section class="chat-input-section">
 
       <div class="chat-input-wrapper">
@@ -196,10 +228,14 @@
       <div class="input-footer">
 
         <span>
-          AI Master can make mistakes. Check important information.
+          AI Master can make mistakes.
+          Check important information.
         </span>
 
-        <select id="outputType" class="hidden">
+        <select
+          id="outputType"
+          class="hidden"
+        >
           <option value="text">Text</option>
           <option value="audio">Audio</option>
           <option value="video">Video</option>
@@ -213,6 +249,7 @@
   </main>
 
 </div>
+
 
 <script src="/app.js"></script>
 
