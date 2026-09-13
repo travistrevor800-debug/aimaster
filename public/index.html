@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,185 +15,206 @@
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
 
-      <div class="brand">
-        <div class="brand-icon">AI</div>
-        <span>AI Master</span>
-      </div>
+    <div class="brand">
+      <div class="brand-icon">AI</div>
+      <span>AI Master</span>
+    </div>
 
-      <nav>
+    <button id="newChatBtn" class="new-chat-btn">
+      ＋ New Chat
+    </button>
 
-        <button class="nav-item active" data-page="dashboard">
-          <span>🏠</span>
-          Dashboard
-        </button>
+    <nav>
 
-        <button class="nav-item" data-page="chat">
-          <span>🤖</span>
-          AI Chat
-        </button>
+      <button class="nav-item active" data-page="chat">
+        <span>🤖</span>
+        AI Chat
+      </button>
 
-        <button class="nav-item" data-page="audio">
-          <span>🔊</span>
-          Audio
-        </button>
+      <button class="nav-item" data-page="dashboard">
+        <span>🏠</span>
+        Dashboard
+      </button>
 
-        <button class="nav-item" data-page="video">
-          <span>🎬</span>
-          Video
-        </button>
+      <button class="nav-item" data-page="audio">
+        <span>🔊</span>
+        Audio
+      </button>
 
-        <button class="nav-item" data-page="images">
-          <span>🖼️</span>
-          Images
-        </button>
+      <button class="nav-item" data-page="video">
+        <span>🎬</span>
+        Video
+      </button>
 
-        <button class="nav-item" data-page="social">
-          <span>📱</span>
-          Social Media
-        </button>
+      <button class="nav-item" data-page="images">
+        <span>🖼️</span>
+        Images
+      </button>
 
-        <button class="nav-item" data-page="memory">
-          <span>🧠</span>
-          Memory
-        </button>
+      <button class="nav-item" data-page="social">
+        <span>📱</span>
+        Social Media
+      </button>
 
-      </nav>
+      <button class="nav-item" data-page="memory">
+        <span>🧠</span>
+        Memory
+      </button>
 
-      <div class="sidebar-bottom">
+    </nav>
 
-        <button class="nav-item">
-          <span>⚙️</span>
-          Settings
-        </button>
+    <div class="sidebar-bottom">
 
-      </div>
+      <button class="nav-item">
+        <span>⚙️</span>
+        Settings
+      </button>
 
-    </aside>
+    </div>
+
+  </aside>
 
 
-    <!-- MAIN -->
-    <main class="main">
+  <!-- MAIN -->
+  <main class="main chat-main">
 
-      <header class="topbar">
+    <!-- TOP BAR -->
+    <header class="topbar chat-topbar">
+
+      <div class="chat-title">
+
+        <div class="ai-avatar">
+          AI
+        </div>
 
         <div>
-          <h1>AI Workspace</h1>
-          <p>Create with AI</p>
+          <h1>AI Master</h1>
+          <p>
+            <span class="status-dot"></span>
+            Online
+          </p>
         </div>
 
-        <div class="status">
-          <span class="status-dot"></span>
-          AI Master Online
+      </div>
+
+      <button id="topNewChatBtn" class="top-new-chat">
+        ＋ New Chat
+      </button>
+
+    </header>
+
+
+    <!-- CHAT AREA -->
+    <section id="chatMessages" class="chat-messages">
+
+      <!-- WELCOME -->
+      <div id="welcomeScreen" class="welcome-screen">
+
+        <div class="welcome-avatar">
+          🤖
         </div>
 
-      </header>
-
-
-      <!-- AI INPUT -->
-      <section class="hero">
-
-        <h2>What do you want to create?</h2>
+        <h2>How can I help you today?</h2>
 
         <p>
-          Ask AI Master to create text, audio, images or video.
+          I'm AI Master. Ask me anything, create content,
+          brainstorm ideas, write code, or solve a problem.
         </p>
+
+        <div class="suggestions">
+
+          <button class="suggestion"
+            data-prompt="Explain artificial intelligence in simple terms.">
+            💡 Explain something
+          </button>
+
+          <button class="suggestion"
+            data-prompt="Give me 5 creative business ideas I can start.">
+            💼 Business ideas
+          </button>
+
+          <button class="suggestion"
+            data-prompt="Help me write a professional message.">
+            ✍️ Help me write
+          </button>
+
+          <button class="suggestion"
+            data-prompt="Teach me something interesting today.">
+            🧠 Teach me
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- THINKING INDICATOR -->
+    <div id="typingIndicator" class="typing-indicator hidden">
+
+      <div class="message-avatar ai-message-avatar">
+        AI
+      </div>
+
+      <div class="typing-content">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+    </div>
+
+
+    <!-- INPUT AREA -->
+    <section class="chat-input-section">
+
+      <div class="chat-input-wrapper">
 
         <textarea
           id="prompt"
-          placeholder="Example: Create a motivational video about discipline..."
+          rows="1"
+          placeholder="Message AI Master..."
+          autocomplete="off"
         ></textarea>
 
-        <div class="controls">
+        <button
+          id="generateBtn"
+          class="send-btn"
+          aria-label="Send message"
+        >
+          ➤
+        </button>
 
-          <select id="outputType">
-            <option value="text">Text</option>
-            <option value="audio">Audio</option>
-            <option value="video">Video</option>
-            <option value="image">Image</option>
-          </select>
+      </div>
 
-          <button id="generateBtn">
-            ✨ Generate
-          </button>
+      <div class="input-footer">
 
-        </div>
+        <span>
+          AI Master can make mistakes. Check important information.
+        </span>
 
-      </section>
+        <select id="outputType" class="hidden">
+          <option value="text">Text</option>
+          <option value="audio">Audio</option>
+          <option value="video">Video</option>
+          <option value="image">Image</option>
+        </select>
 
+      </div>
 
-      <!-- OUTPUT -->
-      <section class="output-section">
+    </section>
 
-        <div class="section-title">
-          <h2>Output</h2>
-        </div>
+  </main>
 
-        <div id="outputArea">
+</div>
 
-          <div class="empty-output">
-
-            <div class="empty-icon">
-              ✨
-            </div>
-
-            <h3>Your generated content will appear here</h3>
-
-            <p>
-              Choose an output type and send your request.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- QUICK ACTIONS -->
-      <section class="quick-actions">
-
-        <h2>Quick Actions</h2>
-
-        <div class="cards">
-
-          <button class="action-card" data-type="text">
-            <span>🤖</span>
-            <strong>Ask AI</strong>
-            <small>Chat with AI Master</small>
-          </button>
-
-          <button class="action-card" data-type="audio">
-            <span>🔊</span>
-            <strong>Create Audio</strong>
-            <small>Generate voice output</small>
-          </button>
-
-          <button class="action-card" data-type="video">
-            <span>🎬</span>
-            <strong>Create Video</strong>
-            <small>Generate video content</small>
-          </button>
-
-          <button class="action-card" data-type="image">
-            <span>🖼️</span>
-            <strong>Create Image</strong>
-            <small>Generate visual content</small>
-          </button>
-
-        </div>
-
-      </section>
-
-    </main>
-
-  </div>
-
-  <script src="/app.js"></script>
+<script src="/app.js"></script>
 
 </body>
 </html>
