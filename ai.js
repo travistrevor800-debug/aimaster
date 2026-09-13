@@ -4,9 +4,7 @@ import eventBus from "./eventBus.js";
 
 export default {
   name: "AI Workspace",
-
-  version: "0.2.0",
-
+  version: "0.3.0",
   slug: "ai",
 
   navEntry: {
@@ -22,7 +20,9 @@ export default {
       try {
         const { prompt, type = "text" } = req.body;
 
-        // Validate prompt
+        // =========================
+        // VALIDATION
+        // =========================
         if (!prompt || typeof prompt !== "string") {
           return res.status(400).json({
             success: false,
@@ -30,7 +30,6 @@ export default {
           });
         }
 
-        // Validate output type
         const supportedTypes = [
           "text",
           "audio",
@@ -47,23 +46,25 @@ export default {
         }
 
         // =========================
+        // API KEY
+        // =========================
+        const apiKey = process.env.OPENAI_API_KEY;
+
+        if (!apiKey) {
+          return res.status(503).json({
+            success: false,
+            error: "OPENAI_API_KEY is not configured on Vercel.",
+          });
+        }
+
+        const client = new OpenAI({
+          apiKey,
+        });
+
+        // =========================
         // TEXT GENERATION
         // =========================
         if (type === "text") {
-          const apiKey = process.env.OPENAI_API_KEY;
-
-          if (!apiKey) {
-            return res.status(503).json({
-              success: false,
-              error: "OPENAI_API_KEY is not configured on Vercel.",
-            });
-          }
-
-          // Create OpenAI client only when needed
-          const client = new OpenAI({
-            apiKey,
-          });
-
           const response = await client.responses.create({
             model: "gpt-5.6-luna",
             input: prompt,
@@ -77,6 +78,39 @@ export default {
         }
 
         // =========================
+        // IMAGE GENERATION
+        // =========================
+        if (type === "image") {
+          const response = await client.responses.create({
+            model: "gpt-5.6-luna",
+            input: prompt,
+            tools: [
+              {
+                type: "image_generation",
+              },
+            ],
+          });
+
+          const imageCall = response.output?.find(
+            (item) => item.type === "image_generation_call"
+          );
+
+          if (!imageCall || !imageCall.result) {
+            return res.status(500).json({
+              success: false,
+              type: "image",
+              error: "Image generation returned no image.",
+            });
+          }
+
+          return res.json({
+            success: true,
+            type: "image",
+            content: `data:image/png;base64,${imageCall.result}`,
+          });
+        }
+
+        // =========================
         // AUDIO
         // =========================
         if (type === "audio") {
@@ -84,17 +118,6 @@ export default {
             success: false,
             type: "audio",
             error: "Audio engine is not connected yet.",
-          });
-        }
-
-        // =========================
-        // IMAGE
-        // =========================
-        if (type === "image") {
-          return res.status(501).json({
-            success: false,
-            type: "image",
-            error: "Image engine is not connected yet.",
           });
         }
 
@@ -131,7 +154,7 @@ export default {
 
     eventBus.emit("module:ready", {
       module: "ai",
-      version: "0.2.0",
+      version: "0.3.0",
     });
   },
 };
