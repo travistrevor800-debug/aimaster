@@ -17,21 +17,23 @@ app.use(
 
 app.use(express.json());
 
-// Serve AI Master frontend
+// Serve frontend
 const publicDir = path.join(__dirname, "public");
 app.use(express.static(publicDir));
 
 const loader = new ModuleLoader();
 
-let bootPromise;
+let bootPromise = null;
 
 async function boot() {
-  if (bootPromise) return bootPromise;
+  if (bootPromise) {
+    return bootPromise;
+  }
 
   bootPromise = (async () => {
-    try {
-      console.log("Starting AI Master backend...");
+    console.log("Starting AI Master backend...");
 
+    try {
       await loader.load();
 
       console.log(
@@ -43,38 +45,13 @@ async function boot() {
 
       loader.mountRoutes(app);
 
-      // Dashboard navigation
-      app.get("/api/dashboard/nav", (req, res) => {
-        res.json({
-          modules: loader.getNavEntries(),
-        });
-      });
-
-      // Health check
-      app.get("/api/health", (req, res) => {
-        res.json({
-          status: "ok",
-          modulesLoaded: loader.list().length,
-          modules: loader.list().map((module) => module.name),
-        });
-      });
-
-      // API information
-      app.get("/api", (req, res) => {
-        res.json({
-          name: "AI Master Backend",
-          status: "running",
-          health: "/api/health",
-          dashboard: "/",
-        });
-      });
-
       console.log("AI Master backend initialized successfully.");
 
-      return app;
+      return true;
     } catch (error) {
-      console.error("FATAL BOOT ERROR:", error);
+      console.error("BOOT ERROR:", error);
 
+      // Allow a later invocation to retry.
       bootPromise = null;
 
       throw error;
@@ -84,6 +61,96 @@ async function boot() {
   return bootPromise;
 }
 
-await boot();
+/*
+ * Basic health endpoint.
+ * This responds without depending on module loading.
+ */
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "AI Master Backend",
+    modulesLoaded: loader.list().length,
+    modules: loader.list().map((module) => module.name),
+  });
+});
+
+app.get("/api", (req, res) => {
+  res.json({
+    name: "AI Master Backend",
+    status: "running",
+    health: "/api/health",
+    dashboard: "/",
+  });
+});
+
+/*
+ * Initialize modules before handling module API routes.
+ */
+app.use("/api", async (req, res, next) => {
+  // Don't make basic endpoints depend on module boot.
+  if (
+    req.path === "/health" ||
+    req.path === "/"
+  ) {
+    return next();
+  }
+
+  try {
+    await boot();
+    next();
+  } catch (error) {
+    console.error("MODULE BOOT FAILED:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "AI Master backend failed to initialize.",
+      message: error.message,
+    });
+  }
+});
+
+/*
+ * Mount module routes after boot.
+ */
+let routesMounted = false;
+
+async function ensureRoutesMounted() {
+  if (routesMounted) {
+    return;
+  }
+
+  await boot();
+  loader.mountRoutes(app);
+  routesMounted = true;
+}
+
+/*
+ * Catch module API requests and make sure routes exist.
+ */
+app.use(async (req, res, next) => {
+  if (!req.path.startsWith("/api/")) {
+    return next();
+  }
+
+  try {
+    await ensureRoutesMounted();
+    next();
+  } catch (error) {
+    console.error("ROUTE INITIALIZATION ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to initialize API routes.",
+      message: error.message,
+    });
+  }
+});
+
+/*
+ * Frontend fallback.
+ */
+app.get("*", (req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
 
 export default app;
