@@ -1,43 +1,42 @@
 const promptInput = document.getElementById("prompt");
-const outputType = document.getElementById("outputType");
 const generateBtn = document.getElementById("generateBtn");
-const outputArea = document.getElementById("outputArea");
+const chatMessages = document.getElementById("chatMessages");
+const typingIndicator = document.getElementById("typingIndicator");
 
-async function generateContent() {
+const newChatBtn = document.getElementById("newChatBtn");
+const topNewChatBtn = document.getElementById("topNewChatBtn");
+
+const suggestions = document.querySelectorAll(".suggestion");
+
+let conversation = [];
+
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
+async function sendMessage() {
   const prompt = promptInput.value.trim();
-  const type = outputType.value;
 
   if (!prompt) {
-    outputArea.innerHTML = `
-      <div class="empty-output">
-        <div>
-          <h3>Please enter a prompt</h3>
-          <p>Tell AI Master what you want to create.</p>
-        </div>
-      </div>
-    `;
-
     return;
   }
 
-  generateBtn.disabled = true;
-  generateBtn.textContent = "Generating...";
+  addMessage("user", prompt);
 
-  outputArea.innerHTML = `
-    <div class="empty-output">
-      <div>
-        <div class="empty-icon">⚙️</div>
-        <h3>AI Master is working...</h3>
-        <p>Creating your ${type} output.</p>
-      </div>
-    </div>
-  `;
+  conversation.push({
+    role: "user",
+    content: prompt
+  });
+
+  promptInput.value = "";
+  autoResize();
+
+  generateBtn.disabled = true;
+
+  showTyping();
 
   try {
-
-    /*
-     * This endpoint will be created in the next backend phase.
-     */
     const response = await fetch("/api/ai/generate", {
       method: "POST",
 
@@ -46,101 +45,361 @@ async function generateContent() {
       },
 
       body: JSON.stringify({
-        prompt,
-        type
+        prompt: buildConversationPrompt(),
+        type: "text"
       })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || "Generation failed");
+      throw new Error(
+        data.message ||
+        data.error ||
+        "AI generation failed"
+      );
     }
 
-    renderOutput(data);
+    hideTyping();
+
+    const answer =
+      data.content ||
+      "I didn't receive a response from AI Master.";
+
+    addMessage("ai", answer);
+
+    conversation.push({
+      role: "assistant",
+      content: answer
+    });
 
   } catch (error) {
 
-    outputArea.innerHTML = `
-      <div class="empty-output">
-        <div>
-          <div class="empty-icon">⚠️</div>
-          <h3>Generation failed</h3>
-          <p>${escapeHtml(error.message)}</p>
-        </div>
-      </div>
-    `;
+    hideTyping();
+
+    addMessage(
+      "error",
+      `Sorry, something went wrong.\n\n${error.message}`
+    );
 
   } finally {
 
     generateBtn.disabled = false;
-    generateBtn.textContent = "✨ Generate";
+    promptInput.focus();
 
   }
 }
 
 
-function renderOutput(data) {
+/* =========================
+   BUILD CONVERSATION
+========================= */
 
-  if (data.type === "audio" && data.url) {
+function buildConversationPrompt() {
 
-    outputArea.innerHTML = `
-      <h3>🔊 Audio Output</h3>
-
-      <audio
-        controls
-        style="width:100%; margin-top:20px;"
-        src="${data.url}">
-      </audio>
-    `;
-
-    return;
+  if (conversation.length <= 1) {
+    return conversation[0]?.content || "";
   }
 
+  return `
+You are AI Master, a helpful conversational AI assistant.
 
-  if (data.type === "video" && data.url) {
+Continue the conversation naturally.
 
-    outputArea.innerHTML = `
-      <h3>🎬 Video Output</h3>
+Conversation:
 
-      <video
-        controls
-        style="width:100%; margin-top:20px; border-radius:12px;"
-        src="${data.url}">
-      </video>
-    `;
+${conversation
+  .map(message => {
+    const speaker =
+      message.role === "user"
+        ? "User"
+        : "AI Master";
 
-    return;
+    return `${speaker}: ${message.content}`;
+  })
+  .join("\n\n")}
+
+AI Master:
+`;
+}
+
+
+/* =========================
+   ADD MESSAGE
+========================= */
+
+function addMessage(type, text) {
+
+  const welcome = document.getElementById("welcomeScreen");
+
+  if (welcome) {
+    welcome.remove();
   }
 
+  const message = document.createElement("div");
 
-  if (data.type === "image" && data.url) {
+  message.className =
+    `chat-message ${type}-message`;
 
-    outputArea.innerHTML = `
-      <h3>🖼️ Image Output</h3>
+  if (type === "user") {
 
-      <img
-        src="${data.url}"
-        style="width:100%; margin-top:20px; border-radius:12px;"
-        alt="Generated image"
-      />
+    message.innerHTML = `
+      <div class="message-avatar user-message-avatar">
+        You
+      </div>
+
+      <div class="message-content">
+        ${escapeHtml(text)}
+      </div>
     `;
 
-    return;
+  } else if (type === "ai") {
+
+    message.innerHTML = `
+      <div class="message-avatar ai-message-avatar">
+        AI
+      </div>
+
+      <div class="message-content">
+        ${formatAIResponse(text)}
+      </div>
+    `;
+
+  } else {
+
+    message.innerHTML = `
+      <div class="message-avatar error-message-avatar">
+        !
+      </div>
+
+      <div class="message-content">
+        ${escapeHtml(text)}
+      </div>
+    `;
   }
 
+  chatMessages.appendChild(message);
 
-  outputArea.innerHTML = `
-    <div>
-      <h3>🤖 AI Output</h3>
+  scrollToBottom();
+}
 
-      <p style="margin-top:15px; line-height:1.7;">
-        ${escapeHtml(data.content || "No output returned.")}
+
+/* =========================
+   FORMAT AI RESPONSE
+========================= */
+
+function formatAIResponse(text) {
+
+  let safe = escapeHtml(text);
+
+  // Convert basic markdown-style formatting
+  safe = safe.replace(
+    /\*\*(.*?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+
+  safe = safe.replace(
+    /\n/g,
+    "<br>"
+  );
+
+  return safe;
+}
+
+
+/* =========================
+   TYPING INDICATOR
+========================= */
+
+function showTyping() {
+
+  typingIndicator.classList.remove("hidden");
+
+  scrollToBottom();
+}
+
+
+function hideTyping() {
+
+  typingIndicator.classList.add("hidden");
+}
+
+
+/* =========================
+   NEW CHAT
+========================= */
+
+function newChat() {
+
+  conversation = [];
+
+  chatMessages.innerHTML = `
+    <div id="welcomeScreen" class="welcome-screen">
+
+      <div class="welcome-avatar">
+        🤖
+      </div>
+
+      <h2>How can I help you today?</h2>
+
+      <p>
+        I'm AI Master. Ask me anything, create content,
+        brainstorm ideas, write code, or solve a problem.
       </p>
+
+      <div class="suggestions">
+
+        <button class="suggestion"
+          data-prompt="Explain artificial intelligence in simple terms.">
+          💡 Explain something
+        </button>
+
+        <button class="suggestion"
+          data-prompt="Give me 5 creative business ideas I can start.">
+          💼 Business ideas
+        </button>
+
+        <button class="suggestion"
+          data-prompt="Help me write a professional message.">
+          ✍️ Help me write
+        </button>
+
+        <button class="suggestion"
+          data-prompt="Teach me something interesting today.">
+          🧠 Teach me
+        </button>
+
+      </div>
+
     </div>
   `;
+
+  attachSuggestionEvents();
+
+  promptInput.value = "";
+
+  autoResize();
+
+  promptInput.focus();
 }
 
+
+/* =========================
+   SUGGESTIONS
+========================= */
+
+function attachSuggestionEvents() {
+
+  document
+    .querySelectorAll(".suggestion")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        promptInput.value =
+          button.dataset.prompt;
+
+        autoResize();
+
+        promptInput.focus();
+
+      });
+
+    });
+}
+
+
+/* =========================
+   TEXTAREA
+========================= */
+
+function autoResize() {
+
+  promptInput.style.height = "auto";
+
+  promptInput.style.height =
+    Math.min(promptInput.scrollHeight, 180) +
+    "px";
+}
+
+
+/* =========================
+   ENTER TO SEND
+========================= */
+
+promptInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+promptInput.addEventListener(
+  "input",
+  autoResize
+);
+
+
+/* =========================
+   BUTTON EVENTS
+========================= */
+
+generateBtn.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+newChatBtn.addEventListener(
+  "click",
+  newChat
+);
+
+
+topNewChatBtn.addEventListener(
+  "click",
+  newChat
+);
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+document
+  .querySelectorAll(".nav-item")
+  .forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      document
+        .querySelectorAll(".nav-item")
+        .forEach(item =>
+          item.classList.remove("active")
+        );
+
+      button.classList.add("active");
+
+    });
+
+  });
+
+
+/* =========================
+   SECURITY
+========================= */
 
 function escapeHtml(value) {
 
@@ -154,19 +413,23 @@ function escapeHtml(value) {
 }
 
 
-generateBtn.addEventListener("click", generateContent);
+/* =========================
+   SCROLL
+========================= */
+
+function scrollToBottom() {
+
+  setTimeout(() => {
+
+    chatMessages.scrollTop =
+      chatMessages.scrollHeight;
+
+  }, 50);
+}
 
 
-document.querySelectorAll(".action-card").forEach((card) => {
+/* =========================
+   STARTUP
+========================= */
 
-  card.addEventListener("click", () => {
-
-    const type = card.dataset.type;
-
-    outputType.value = type;
-
-    promptInput.focus();
-
-  });
-
-});
+attachSuggestionEvents();
